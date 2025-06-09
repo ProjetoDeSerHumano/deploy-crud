@@ -15,19 +15,6 @@ services:
       # Mapear as portas para ficarem visiveis na máquina host
       - "80:80"
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: crud-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: postgres@servidor.com
-      PGADMIN_DEFAULT_PASSWORD: postdba
-    ports:
-      - 8081:80
-    depends_on:
-      - postgres
-    networks:
-      - lamp-network
-
   mysql:
     image: mysql:5.7 # A versão 8.0 está com instabilidades
     container_name: crud-mysql
