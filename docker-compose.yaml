@@ -1,0 +1,89 @@
+services:
+#parte do php
+  php:
+    build:
+      context: ./ # Indica onde está o arquivo Dockerfile
+      dockerfile: Dockerfile
+
+    container_name: crud-php # Apelido para o container
+    restart: always
+    volumes:
+      - ./crud:/var/www/html/ # Irá copiar o conteúdo da pasta src para o container
+    networks:
+      - lamp-network
+    ports:
+      # Mapear as portas para ficarem visiveis na máquina host
+      - "80:80"
+    
+    
+#parte do banco de dados
+  postgres:
+    image: postgres:12
+    container_name: crud-pgsql
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postdba
+      POSTGRES_USER: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    networks:
+     - lamp-network
+#pgadmin
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: crud-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@servidor.com
+      PGADMIN_DEFAULT_PASSWORD: postdba
+    ports:
+      - 8081:80
+    depends_on:
+      - postgres
+    networks:
+      - lamp-network
+
+#mysql
+  mysql:
+    image: mysql:5.7 # A versão 8.0 está com instabilidades
+    container_name: crud-mysql
+    restart: always # Por padrão o Docker não reinicia o container, vamos mudar isso.
+    volumes:
+      - ./mysql:/var/lib/mysql
+    ports:
+      - "3306:3306" # Mapeei a porta para funcionar no Dbeaver, mas não precisaria.
+    environment:
+      MYSQL_ROOT_PASSWORD: root # Definir senha do usuário root
+      MYSQL_DATABASE: teste # Iniciar o container com um banco criado
+    networks:
+      - lamp-network
+
+#phpmyadmin
+  phpmyadmin:
+    build:
+      context: ./phpmyadmin
+      dockerfile: Dockerfile
+
+    container_name: crud-phpmyadmin
+    restart: always
+    volumes:
+      - /sessions
+    ports:
+      - "8080:80"
+    environment:
+      PMA_ARBITRARY: 0 # 1 para Habilitar a opção para inserir host no login
+      PMA_HOST: mysql
+    networks:
+      - lamp-network
+
+networks:
+  lamp-network:
+    driver: bridge
+
+volumes:
+  postgres:
+  mysql:
+  web:
+    driver: local
+
