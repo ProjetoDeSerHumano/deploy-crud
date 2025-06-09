@@ -1,35 +1,20 @@
+#php
 services:
-  # PARTE DO APACHE + PHP
+
   php:
     build:
-      context: ./ # Indica onde está o Dockerfile
+      context: ./ # Indica onde está o arquivo Dockerfile
       dockerfile: Dockerfile
-    container_name: crud-apache
+    container_name: crud-php # Apelido para o container
     restart: always
     volumes:
-      - ./deploy-crud:/var/www/html/
+      - ./crud:/var/www/html:cached # Irá copiar o conteúdo da pasta src para o container
     networks:
       - lamp-network
     ports:
+      # Mapear as portas para ficarem visiveis na máquina host
       - "80:80"
 
-  # PARTE DO BANCO DE DADOS POSTGRESQL
-  postgres:
-    image: postgres:12
-    container_name: crud-pgsql
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postdba
-      POSTGRES_DB: crud # nome do banco criado automaticamente
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./postgres:/var/lib/postgresql/data
-    networks:
-      - lamp-network
-
-  # INTERFACE DO POSTGRES - PGADMIN
   pgadmin:
     image: dpage/pgadmin4
     container_name: crud-pgadmin
@@ -37,45 +22,44 @@ services:
       PGADMIN_DEFAULT_EMAIL: postgres@servidor.com
       PGADMIN_DEFAULT_PASSWORD: postdba
     ports:
-      - "8081:80"
+      - 8081:80
     depends_on:
       - postgres
     networks:
       - lamp-network
 
-  # PARTE DO BANCO DE DADOS MYSQL
   mysql:
-    image: mysql:5.7
+    image: mysql:5.7 # A versão 8.0 está com instabilidades
     container_name: crud-mysql
-    restart: always
+    restart: always # Por padrão o Docker não reinicia o container, vamos mudar isso.
     volumes:
       - ./mysql:/var/lib/mysql
-      - ./deploy-crud:/docker-entrypoint-initdb.d 
+      - ./crud:/docker-entrypoint-initdb.d 
     ports:
-      - "3306:3306"
+      - "3306:3306" # Mapeei a porta para funcionar no Dbeaver, mas não precisaria.
     environment:
-      MYSQL_ROOT_PASSWORD: postdba
-      MYSQL_DATABASE: crud
+      MYSQL_ROOT_PASSWORD: postdba # Definir senha do usuário root
+      MYSQL_DATABASE: crud # Iniciar o container com um banco criado
     networks:
       - lamp-network
 
-  # INTERFACE DO MYSQL - PHPMYADMIN
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
     container_name: crud-phpmyadmin
     restart: always
-    depends_on:
-      - mysql
-    environment:
-      PMA_HOST: mysql
-      PMA_USER: root
-      PMA_PASSWORD: postdba 
+    volumes:
+      - /sessions
     ports:
       - "8080:80"
+    links:
+      - mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: postdba
+      PMA_HOST: mysql
     networks:
       - lamp-network
 
-# REDE PERSONALIZADA PARA COMUNICAÇÃO ENTRE OS CONTAINERS
 networks:
   lamp-network:
     driver: bridge
+
