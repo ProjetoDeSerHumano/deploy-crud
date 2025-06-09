@@ -61,21 +61,18 @@ services:
 
 #phpmyadmin
   phpmyadmin:
-    build:
-      context: ./phpmyadmin
-      dockerfile: Dockerfile
-
-    container_name: crud-phpmyadmin
-    restart: always
-    volumes:
-      - /sessions
-    ports:
-      - "8080:80"
-    environment:
-      PMA_ARBITRARY: 0 # 1 para Habilitar a opção para inserir host no login
-      PMA_HOST: mysql
-    networks:
-      - lamp-network
+  image: phpmyadmin/phpmyadmin
+  container_name: crud-phpmyadmin
+  restart: always
+  ports:
+    - "8080:80"
+  environment:
+    PMA_HOST: mysql
+    PMA_ARBITRARY: 0
+  depends_on:
+    - mysql
+  networks:
+    - lamp-network
 
 networks:
   lamp-network:
