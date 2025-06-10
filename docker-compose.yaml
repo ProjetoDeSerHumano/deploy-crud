@@ -1,32 +1,32 @@
-#php
+
 services:
 
   php:
     build:
-      context: ./ # Indica onde está o arquivo Dockerfile
+      context: ./ 
       dockerfile: Dockerfile
-    container_name: crud-php # Apelido para o container
+    container_name: crud-php
     restart: always
     volumes:
-      - ./crud:/var/www/html:cached # Irá copiar o conteúdo da pasta src para o container
+      - ./crud:/var/www/html:cached 
     networks:
       - lamp-network
     ports:
-      # Mapear as portas para ficarem visiveis na máquina host
+   
       - "80:80"
 
   mysql:
-    image: mysql:5.7 # A versão 8.0 está com instabilidades
+    image: mysql:5.7 
     container_name: crud-mysql
-    restart: always # Por padrão o Docker não reinicia o container, vamos mudar isso.
+    restart: always
     volumes:
       - ./mysql:/var/lib/mysql
       - ./crud:/docker-entrypoint-initdb.d 
     ports:
-      - "3306:3306" # Mapeei a porta para funcionar no Dbeaver, mas não precisaria.
+      - "3306:3306" 
     environment:
-      MYSQL_ROOT_PASSWORD: postdba # Definir senha do usuário root
-      MYSQL_DATABASE: crud # Iniciar o container com um banco criado
+      MYSQL_ROOT_PASSWORD: postdba 
+      MYSQL_DATABASE: crud 
     networks:
       - lamp-network
 
